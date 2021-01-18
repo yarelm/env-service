@@ -53,17 +53,16 @@ func main() {
 func consume(ctx context.Context) {
 	gcpProject := os.Getenv("GCP_PROJECT")
 	pubsubSubscription := os.Getenv("PUBSUB_SUBSCRIPTION")
-	pubsubTopic := os.Getenv("PUBSUB_TOPIC")
+	// pubsubTopic := os.Getenv("PUBSUB_TOPIC")
 
 	client, err := pubsub.NewClient(ctx, gcpProject)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	topic := client.Topic(ctx, pubsubTopic)
+	// topic := client.Topic(pubsubTopic)
 
-	sub := client.Subscription(ctx, pubsubSubscription,
-		pubsub.SubscriptionConfig{Topic: topic})
+	sub := client.Subscription(pubsubSubscription)
 
 	log.Print("started listening to pubsub...")
 
