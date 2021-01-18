@@ -60,12 +60,12 @@ func consume(ctx context.Context) {
 		log.Fatal(err)
 	}
 
-	topic, err := client.CreateTopic(ctx, pubsubTopic)
+	topic, err := client.Topic(ctx, pubsubTopic)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	sub, err := client.CreateSubscription(ctx, pubsubSubscription,
+	sub, err := client.Subscription(ctx, pubsubSubscription,
 		pubsub.SubscriptionConfig{Topic: topic})
 	if err != nil {
 		log.Fatal(err)
