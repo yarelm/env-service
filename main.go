@@ -53,14 +53,13 @@ func main() {
 func consume(ctx context.Context) {
 	gcpProject := os.Getenv("GCP_PROJECT")
 	pubsubSubscription := os.Getenv("PUBSUB_SUBSCRIPTION")
-	// pubsubTopic := os.Getenv("PUBSUB_TOPIC")
+
+	log.Println(gcpProject, pubsubSubscription)
 
 	client, err := pubsub.NewClient(ctx, gcpProject)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	// topic := client.Topic(pubsubTopic)
 
 	sub := client.Subscription(pubsubSubscription)
 	perms, err := sub.IAM().TestPermissions(ctx, []string{
