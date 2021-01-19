@@ -63,6 +63,15 @@ func consume(ctx context.Context) {
 	// topic := client.Topic(pubsubTopic)
 
 	sub := client.Subscription(pubsubSubscription)
+	perms, err := sub.IAM().TestPermissions(ctx, []string{
+		"pubsub.subscriptions.consume",
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, perm := range perms {
+		log.Printf("Allowed: %v\n", perm)
+	}
 
 	log.Print("started listening to pubsub...")
 
