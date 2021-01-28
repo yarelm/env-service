@@ -47,13 +47,15 @@ func main() {
 		}
 	}()
 
-	validateDbConnectivity(ctx)
+	db := connectDb(ctx)
+	defer db.Close()
+
 	consume(ctx)
 	<-done
 	fmt.Printf("bye!")
 }
 
-func validateDbConnectivity(ctx context.Context) {
+func connectDb(ctx context.Context) *sql.DB {
 	psqlInfo := fmt.Sprintf("host=%s user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		os.Getenv("PG_HOST"), os.Getenv("PG_USER"), os.Getenv("PG_USER"), os.Getenv("PG_USER"))
@@ -62,7 +64,6 @@ func validateDbConnectivity(ctx context.Context) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
 
 	err = db.PingContext(ctx)
 	if err != nil {
@@ -70,6 +71,8 @@ func validateDbConnectivity(ctx context.Context) {
 	}
 
 	fmt.Println("Successfully connected to DB!")
+
+	return db
 }
 
 func consume(ctx context.Context) {
