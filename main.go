@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 	"syscall"
 
 	"cloud.google.com/go/pubsub"
+	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -45,9 +47,29 @@ func main() {
 		}
 	}()
 
+	validateDbConnectivity(ctx)
 	consume(ctx)
 	<-done
 	fmt.Printf("bye!")
+}
+
+func validateDbConnectivity(ctx context.Context) {
+	psqlInfo := fmt.Sprintf("host=%s user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		os.Getenv("PG_HOST"), os.Getenv("PG_USER"), os.Getenv("PG_USER"), os.Getenv("PG_USER"))
+
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	err = db.PingContext(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Successfully connected to DB!")
 }
 
 func consume(ctx context.Context) {
