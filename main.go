@@ -23,7 +23,7 @@ func main() {
 	db := connectDb(ctx)
 	defer db.Close()
 
-	consumeMessages(ctx, db)
+	consumePaymentEvents(ctx, db)
 	log.Printf("going down. bye!")
 }
 
@@ -53,15 +53,18 @@ func connectDb(ctx context.Context) *sql.DB {
 		log.Fatal(err)
 	}
 
+	_, err = db.ExecContext(ctx, "CREATE TABLE IF NOT EXISTS payment_events (id text);")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	log.Println("Successfully connected to DB!")
 	return db
 }
 
-func consumeMessages(ctx context.Context, db *sql.DB) {
+func consumePaymentEvents(ctx context.Context, db *sql.DB) {
 	gcpProject := os.Getenv("GCP_PROJECT")
 	pubsubSubscription := os.Getenv("PUBSUB_SUBSCRIPTION")
-
-	log.Println(gcpProject, pubsubSubscription)
 
 	client, err := pubsub.NewClient(ctx, gcpProject)
 	if err != nil {
@@ -74,7 +77,10 @@ func consumeMessages(ctx context.Context, db *sql.DB) {
 	err = sub.Receive(ctx, func(ctx context.Context, m *pubsub.Message) {
 		log.Printf("Got message: %s", m.Data)
 
-		// TODO: write to DB
+		_, err := db.ExecContext(ctx, "INSERT INTO payment_events VALUES (?)", m.ID)
+		if err != nil {
+			log.Fatal(err)
+		}
 		m.Ack()
 	})
 	if err != nil {
